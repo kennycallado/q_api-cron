@@ -55,20 +55,20 @@ Algunos ficheros deben ser revisados y actualizados para cada proyecto derivado 
 
 #### Raíz del proyecto
 
-- [ ] .env
+- [X] .env
   - Dirección de la base de datos
-- [ ] Cargo.toml
+- [X] Cargo.toml
   - Nombre del paquete
   - Revisar dependencias
   - Revisar features
-- [ ] .neoconf.json
+- [X] .neoconf.json
   - Revisar features
-- [ ] Containerfile
+- [X] Containerfile
   - Nombre del paquete desde Cargo.toml
-- [ ] compose.yaml
+- [X] compose.yaml
   - Variables de entorno
   - Servicios extra
-- [ ] Rocket.toml
+- [X] Rocket.toml
   - Parámetros de configuración del proyecto
   - secret_key = `openssl rand -base64 32`
 

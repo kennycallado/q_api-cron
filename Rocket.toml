@@ -2,11 +2,11 @@
 # :redir @* | !openssl rand -base64 32 | tr -d '\n' | xclip -selection clipboard
 
 [default]
-ident      = "questions_api-base"
+ident      = "questions_api-cron"
 port       = 8000
-address    = "0.0.0.0"
+# address    = "0.0.0.0"
 origin_url = "http://localhost:8000"
-secret_key = ""
+# secret_key = ""
 
 profile_url   = "http://localhost:8001/api/v1/profile/"
 user_url      = "http://localhost:8002/api/v1/user/"
@@ -28,4 +28,4 @@ checker_url   = "http://localhost:3000/api/v1/checker/"
 project_url   = "http://localhost:8051/api/v1/project/"
 
 [default.databases.questions]
-url = "postgres://base:base@localhost/base"
+url = "postgres://cron:cron@localhost/cron"
