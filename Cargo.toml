@@ -4,10 +4,10 @@ version = "0.1.5"
 edition = "2021"
 
 [features]
-default = ["cron", "reqwest"]
+default = ["cron"]
 full  =  ["db", "fetch", "cron"]
 
-cron  = ["tokio-cron-scheduler"]
+cron  = ["tokio-cron-scheduler", "reqwest"]
 db    = ["diesel", "diesel_migrations", "rocket_sync_db_pools"]
 fetch = ["reqwest"]
 
