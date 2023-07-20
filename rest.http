@@ -35,7 +35,7 @@ Accept: application/json
 
 GET http://localhost:8000/api/v1/cron/hello
 Accept: application/json
-Authorization: Bearer <token>
+Authorization: Bearer 
 Content-type: application/json
 
 GET http://localhost:8000/api/v1/cron/hello/state
