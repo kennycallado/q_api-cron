@@ -9,6 +9,7 @@ use crate::app::providers::config_getter::ConfigGetter;
 use crate::app::providers::guards::claims::AccessClaims;
 use crate::app::providers::services::claims::{Claims, UserInClaims};
 use crate::app::providers::services::cron::CronManager;
+use crate::app::providers::services::cron::CronJob as CronJobTrait;
 
 use crate::app::modules::cron::model::{CronJob, NewCronJob};
 
@@ -17,6 +18,7 @@ pub fn routes() -> Vec<rocket::Route> {
         hello,
         hello_satete,
         add,
+        index,
     ]
 }
 
@@ -82,5 +84,16 @@ async fn helper(cron: &State<CronManager>, _user: UserInClaims, new_cronjob: New
             Ok(Json(id))
         },
         Err(_) => Err(Status::InternalServerError),
+    }
+}
+
+#[get("/")]
+pub async fn index(cron: &State<CronManager>, claims: AccessClaims) -> Result<Json<Vec<CronJobTrait>>, Status> {
+    match claims.0.user.role.name.as_str() {
+        "admin" => { let jobs = cron.get_jobs().await; Ok(Json(jobs)) },
+        _ => {
+            println!("Error: index; Role not handled");
+            Err(Status::Unauthorized)
+        }
     }
 }

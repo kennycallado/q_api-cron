@@ -4,7 +4,7 @@
 use std::sync::Arc;
 
 #[cfg(feature = "cron")]
-use rocket::serde::uuid::Uuid;
+use rocket::serde::{ uuid::Uuid, Serialize };
 #[cfg(feature = "cron")]
 use rocket::tokio::sync::Mutex;
 
@@ -12,7 +12,7 @@ use rocket::tokio::sync::Mutex;
 use tokio_cron_scheduler::{Job, JobScheduler, JobSchedulerError};
 
 #[cfg(feature = "cron")]
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct CronJob {
     pub id: Uuid,
 }
