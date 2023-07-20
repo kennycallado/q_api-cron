@@ -12,7 +12,7 @@ pub struct ConfigGetter {
     pub user_url: Option<String>,
     pub auth_url: Option<String>,
     //
-    pub fcm_url: Option<String>,
+    pub message_url: Option<String>,
     //
     pub question_url: Option<String>,
     pub answer_url: Option<String>,
@@ -28,6 +28,7 @@ pub struct ConfigGetter {
     pub checker_url: Option<String>,
     //
     pub project_url: Option<String>,
+    pub cron_url: Option<String>,
 }
 
 impl ConfigGetter {
@@ -37,7 +38,7 @@ impl ConfigGetter {
             "user" => ConfigGetter::get_user_url(),
             "auth" => ConfigGetter::get_auth_url(),
             //
-            "fcm" => ConfigGetter::get_fcm_url(),
+            "message" => ConfigGetter::get_message_url(),
             //
             "question" => ConfigGetter::get_question_url(),
             "answer" => ConfigGetter::get_answer_url(),
@@ -53,6 +54,7 @@ impl ConfigGetter {
             "checker" => ConfigGetter::get_checker_url(),
             //
             "project" => ConfigGetter::get_project_url(),
+            "cron" => ConfigGetter::get_project_url(),
             _ => None,
         }
     }
@@ -94,11 +96,11 @@ impl ConfigGetter {
             .auth_url
     }
 
-    fn get_fcm_url() -> Option<String> {
+    fn get_message_url() -> Option<String> {
         rocket::Config::figment()
             .extract::<ConfigGetter>()
             .unwrap()
-            .fcm_url
+            .message_url
     }
 
     fn get_question_url() -> Option<String> {
@@ -169,5 +171,12 @@ impl ConfigGetter {
             .extract::<ConfigGetter>()
             .unwrap()
             .project_url
+    }
+
+    fn get_cron_url() -> Option<String> {
+        rocket::Config::figment()
+            .extract::<ConfigGetter>()
+            .unwrap()
+            .cron_url
     }
 }

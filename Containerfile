@@ -1,3 +1,4 @@
+# FORM alpine:latest
 FROM busybox:latest
 
 # --build-arg PACKAGE_NAME=${package_name}
@@ -9,4 +10,3 @@ COPY ./Rocket.toml /root
 WORKDIR /root
 
 CMD [ "q-api-cron" ]
-

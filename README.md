@@ -1,11 +1,5 @@
 # q_api-base
 
-state route will be shadowed or not expose to the ingress
-
-## TODO
-
-- [ ] Something
-
 ## Changelog
 
 ### v0.1.5
@@ -61,20 +55,20 @@ Algunos ficheros deben ser revisados y actualizados para cada proyecto derivado 
 
 #### Raíz del proyecto
 
-- [X] .env
+- [ ] .env
   - Dirección de la base de datos
-- [X] Cargo.toml
+- [ ] Cargo.toml
   - Nombre del paquete
   - Revisar dependencias
   - Revisar features
-- [X] .neoconf.json
+- [ ] .neoconf.json
   - Revisar features
-- [X] Containerfile
+- [ ] Containerfile
   - Nombre del paquete desde Cargo.toml
-- [X] compose.yaml
+- [ ] compose.yaml
   - Variables de entorno
   - Servicios extra
-- [X] Rocket.toml
+- [ ] Rocket.toml
   - Parámetros de configuración del proyecto
   - secret_key = `openssl rand -base64 32`
 
