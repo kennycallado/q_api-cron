@@ -4,10 +4,6 @@ use rocket::{http::Status, State};
 use serde::{Deserialize, Serialize};
 
 use crate::app::providers::config_getter::ConfigGetter;
-<<<<<<< HEAD
-
-=======
->>>>>>> 0b9aa827104d7b7a68bdca13745b0562a965efc0
 use crate::app::providers::models::record::{PubNewRecord, PubRecord};
 
 #[cfg(feature = "fetch")]

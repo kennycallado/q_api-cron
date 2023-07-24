@@ -15,10 +15,7 @@ pub struct PubResourceContent {
 #[serde(crate = "rocket::serde")]
 pub struct PubResource {
     pub id: i32,
-<<<<<<< HEAD
-=======
     pub resource_type: String,
->>>>>>> 0b9aa827104d7b7a68bdca13745b0562a965efc0
     pub title: String,
     pub description: String,
     pub content: Option<PubResourceContent>,
