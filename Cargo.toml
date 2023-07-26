@@ -4,7 +4,7 @@ version = "0.1.5"
 edition = "2021"
 
 [features]
-default = ["cron"]
+default = ["cron", "db"]
 full  =  ["db", "fetch", "cron", "push"]
 
 cron  = ["tokio-cron-scheduler", "reqwest"]
