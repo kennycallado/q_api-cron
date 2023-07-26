@@ -19,7 +19,7 @@ strip = true
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
-diesel = { version = "2", features = ["postgres", "chrono", "serde_json"], optional = true  }
+diesel = { version = "2", features = ["postgres", "chrono", "serde_json", "uuid"], optional = true }
 diesel_migrations = { version = "2", features = ["postgres"], optional = true }
 jsonwebtoken = "8.2.0"
 reqwest = { version = "0.11", features = ["json"], optional = true }
