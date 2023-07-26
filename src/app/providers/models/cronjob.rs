@@ -1,10 +1,13 @@
 use chrono::{DateTime, Utc, NaiveDateTime};
-use diesel::PgConnection;
 use rocket::serde::uuid::Uuid;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "db")]
+use diesel::PgConnection;
 
+#[cfg(feature = "db")]
 use crate::database::schema::cronjobs;
 
+#[cfg(feature = "db")]
 #[derive(Debug, Clone, Deserialize, Serialize, Queryable, Insertable)]
 #[diesel(treat_none_as_null = true)]
 #[diesel(table_name = cronjobs)]
@@ -19,9 +22,35 @@ pub struct PubCronJob {
     pub until: Option<NaiveDateTime>,
 }
 
+#[cfg(not(feature = "db"))]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct PubCronJob {
+    pub id: Uuid,
+    pub schedule: String,
+    pub service: String,
+    pub status: String,
+    pub route: String,
+    pub since: Option<NaiveDateTime>,
+    pub until: Option<NaiveDateTime>,
+}
+
+#[cfg(feature = "db")]
 #[derive(Debug, Deserialize, Serialize, AsChangeset)]
 #[diesel(treat_none_as_null = true)]
 #[diesel(table_name = cronjobs)]
+#[serde(crate = "rocket::serde")]
+pub struct PubNewCronJob {
+    pub schedule: String,
+    pub service: String,
+    pub status: String,
+    pub route: String,
+    pub since: Option<DateTime<Utc>>,
+    pub until: Option<DateTime<Utc>>
+}
+
+#[cfg(not(feature = "db"))]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct PubNewCronJob {
     pub schedule: String,
@@ -45,4 +74,5 @@ impl From<PubCronJob> for PubNewCronJob {
     }
 }
 
+#[cfg(feature = "db")]
 pub struct DbCron(pub PgConnection);
