@@ -51,8 +51,21 @@ Content-type: application/json
 {
   "schedule": "0/5 * * * * *",
   "service": "logic",
-  "route": "checker/steps/project/1"
+  "route": "checker/steps/project/1",
+  "since": "2023-07-26T17:23:00.0+0200",
+  "until": "2023-07-26T17:24:00.0+0200"
 }
+
+
+GET http://localhost:8000/api/v1/cron/
+Accept: application/json
+Authorization: Bearer 
+Content-type: application/json
+
+DELETE http://localhost:8000/api/v1/cron/
+Accept: application/json
+Authorization: Bearer 
+Content-type: application/json
 
 # }}}
 
