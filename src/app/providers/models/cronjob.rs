@@ -1,13 +1,13 @@
 use chrono::{DateTime, Utc, NaiveDateTime};
 use rocket::serde::uuid::Uuid;
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "db")]
+#[cfg(all(feature = "db", feature = "cron"))]
 use diesel::PgConnection;
 
-#[cfg(feature = "db")]
+#[cfg(feature = "cron")]
 use crate::database::schema::cronjobs;
 
-#[cfg(feature = "db")]
+#[cfg(all(feature = "db", feature = "cron"))]
 #[derive(Debug, Clone, Deserialize, Serialize, Queryable, Insertable)]
 #[diesel(treat_none_as_null = true)]
 #[diesel(table_name = cronjobs)]
@@ -35,7 +35,7 @@ pub struct PubCronJob {
     pub until: Option<NaiveDateTime>,
 }
 
-#[cfg(feature = "db")]
+#[cfg(all(feature = "db", feature = "cron"))]
 #[derive(Debug, Deserialize, Serialize, AsChangeset)]
 #[diesel(treat_none_as_null = true)]
 #[diesel(table_name = cronjobs)]
@@ -61,6 +61,7 @@ pub struct PubNewCronJob {
     pub until: Option<DateTime<Utc>>
 }
 
+#[cfg(all(feature = "db", feature = "cron"))]
 impl From<PubCronJob> for PubNewCronJob {
     fn from(cronjob: PubCronJob) -> Self {
         PubNewCronJob {
@@ -74,5 +75,5 @@ impl From<PubCronJob> for PubNewCronJob {
     }
 }
 
-#[cfg(feature = "db")]
+#[cfg(all(feature = "db", feature = "cron"))]
 pub struct DbCron(pub PgConnection);
