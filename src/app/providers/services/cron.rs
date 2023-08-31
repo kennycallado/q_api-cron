@@ -180,6 +180,12 @@ impl CronManager {
         }
     }
 
+    pub async fn count(&self) -> usize {
+        let jobs = self.jobs.lock().await;
+
+        jobs.len()
+    }
+
     pub async fn get_jobs(&self) -> Vec<PubCronJob> {
         let jobs = self.jobs.lock().await;
 
