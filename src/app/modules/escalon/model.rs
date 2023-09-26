@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use escalon_jobs::{NewEscalonJob, EscalonJobTrait, EscalonJob};
 use rocket_sync_db_pools::ConnectionPool;
 
+use crate::app::providers::models::cronjob::PubEJob;
 use crate::database::connection::Db;
 use crate::database::schema::escalonjobs;
 

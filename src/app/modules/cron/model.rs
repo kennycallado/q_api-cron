@@ -3,25 +3,67 @@ use rocket::serde::uuid::Uuid;
 use serde::{Deserialize, Serialize};
 
 use crate::app::providers::models::cronjob::PubCronJob;
+use crate::app::modules::escalon::model::{EJob, NewEJob};
+use crate::database::schema::cronjobs;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Queryable, Identifiable)]
+#[diesel(table_name = cronjobs)]
 #[serde(crate = "rocket::serde")]
 pub struct CronJob {
-    pub id: Uuid,
-    pub schedule: String,
+    pub id: i32,
+    pub owner: String,
     pub service: String,
-    pub status: String,
     pub route: String,
-    pub since: Option<NaiveDateTime>,
-    pub until: Option<NaiveDateTime>
+    pub job_id: Uuid,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Insertable, AsChangeset)]
+#[diesel(table_name = cronjobs)]
 #[serde(crate = "rocket::serde")]
 pub struct NewCronJob {
-    pub schedule: String,
+    pub owner: String,
     pub service: String,
     pub route: String,
-    pub since: Option<DateTime<Utc>>,
-    pub until: Option<DateTime<Utc>>
+    pub job_id: Uuid,
+}
+
+impl From<CronJob> for NewCronJob {
+    fn from(cronjob: CronJob) -> Self {
+        NewCronJob {
+            owner: cronjob.owner,
+            service: cronjob.service,
+            route: cronjob.route,
+            job_id: cronjob.job_id,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct PostNewCronJob {
+    pub service: String,
+    pub route: String,
+    pub job: NewEJob,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct CronJobComplete {
+    pub id: i32,
+    pub owner: String,
+    pub service: String,
+    pub route: String,
+    pub job: EJob,
+}
+
+impl From<PubCronJob> for CronJobComplete {
+    fn from(cronjob: PubCronJob) -> Self {
+        CronJobComplete {
+            id: cronjob.id,
+            owner: cronjob.owner,
+            service: cronjob.service,
+            route: cronjob.route,
+            job: cronjob.job.into(),
+        }
+    }
 }

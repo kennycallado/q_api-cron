@@ -4,20 +4,23 @@ use serde::{Deserialize, Serialize};
 #[cfg(all(feature = "db", feature = "cron"))]
 use diesel::PgConnection;
 
-#[cfg(feature = "cron")]
-use crate::database::schema::cronjobs;
-
 #[cfg(all(feature = "db", feature = "cron"))]
-#[derive(Debug, Clone, Deserialize, Serialize, Queryable, Insertable)]
-#[diesel(treat_none_as_null = true)]
-#[diesel(table_name = cronjobs)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct PubCronJob {
-    pub id: Uuid,
-    pub schedule: String,
+    pub id: i32,
+    pub owner: String,
     pub service: String,
-    pub status: String,
     pub route: String,
+    pub job: PubEJob,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct PubEJob {
+    pub id: Uuid,
+    pub status: String,
+    pub schedule: String,
     pub since: Option<NaiveDateTime>,
     pub until: Option<NaiveDateTime>,
 }
@@ -36,17 +39,22 @@ pub struct PubCronJob {
 }
 
 #[cfg(all(feature = "db", feature = "cron"))]
-#[derive(Debug, Deserialize, Serialize, AsChangeset)]
-#[diesel(treat_none_as_null = true)]
-#[diesel(table_name = cronjobs)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct PubNewCronJob {
-    pub schedule: String,
     pub service: String,
-    pub status: String,
     pub route: String,
-    pub since: Option<DateTime<Utc>>,
-    pub until: Option<DateTime<Utc>>
+    pub job: NewEJob,
+}
+
+
+#[cfg(all(feature = "db", feature = "cron"))]
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct NewEJob {
+    pub schedule: String,
+    pub since: Option<NaiveDateTime>,
+    pub until: Option<NaiveDateTime>,
 }
 
 #[cfg(not(feature = "db"))]
@@ -65,15 +73,16 @@ pub struct PubNewCronJob {
 impl From<PubCronJob> for PubNewCronJob {
     fn from(cronjob: PubCronJob) -> Self {
         PubNewCronJob {
-            schedule: cronjob.schedule,
             service: cronjob.service,
-            status: cronjob.status,
             route: cronjob.route,
-            since: cronjob.since.map(|d| DateTime::from_utc(d, Utc)),
-            until: cronjob.until.map(|d| DateTime::from_utc(d, Utc)),
+            job: NewEJob {
+                schedule: cronjob.job.schedule,
+                since: cronjob.job.since,
+                until: cronjob.job.until,
+            }
         }
     }
 }
 
-#[cfg(all(feature = "db", feature = "cron"))]
-pub struct DbCron(pub PgConnection);
+// #[cfg(all(feature = "db", feature = "cron"))]
+// pub struct DbCron(pub PgConnection);
