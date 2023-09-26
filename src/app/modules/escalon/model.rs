@@ -50,6 +50,18 @@ impl From<EJob> for NewEJob {
     }
 }
 
+impl From<PubEJob> for EJob {
+    fn from(ejob: PubEJob) -> Self {
+        Self {
+            id: ejob.id,
+            status: ejob.status,
+            schedule: ejob.schedule,
+            since: ejob.since,
+            until: ejob.until,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct NewEJob {
     pub schedule: String,
