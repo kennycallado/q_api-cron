@@ -49,10 +49,22 @@ pub async fn get_complete(db: &Db, id: i32) -> Result<CronJobComplete, diesel::r
     }).await
 }
 
-pub async fn create(db: &Db, app_job: NewCronJob) -> Result<CronJob, diesel::result::Error> {
+pub async fn create(db: &Db, app_job: NewCronJob) -> Result<CronJobComplete, diesel::result::Error> {
     db.run(move |conn| {
-        diesel::insert_into(cronjobs::table)
+        let app_job = diesel::insert_into(cronjobs::table)
             .values(app_job)
-            .get_result::<CronJob>(conn)
+            .get_result::<CronJob>(conn)?;
+
+        let escalon_job = escalonjobs::table
+            .find(app_job.job_id)
+            .first::<EJob>(conn)?;
+
+        Ok(CronJobComplete {
+            id: app_job.id,
+            owner: app_job.owner,
+            service: app_job.service,
+            route: app_job.route,
+            job: escalon_job,
+        })
     }).await
 }

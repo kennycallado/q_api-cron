@@ -51,9 +51,9 @@ impl From<EJob> for NewEJob {
     }
 }
 
-impl From<PubEJob> for EJob {
-    fn from(ejob: PubEJob) -> Self {
-        Self {
+impl From<EJob> for PubEJob {
+    fn from(ejob: EJob) -> Self {
+        PubEJob {
             id: ejob.id,
             status: ejob.status,
             schedule: ejob.schedule,

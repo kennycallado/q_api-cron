@@ -56,9 +56,9 @@ pub struct CronJobComplete {
     pub job: EJob,
 }
 
-impl From<PubCronJob> for CronJobComplete {
-    fn from(cronjob: PubCronJob) -> Self {
-        CronJobComplete {
+impl From<CronJobComplete> for PubCronJob {
+    fn from(cronjob: CronJobComplete) -> Self {
+        PubCronJob {
             id: cronjob.id,
             owner: cronjob.owner,
             service: cronjob.service,
