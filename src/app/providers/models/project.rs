@@ -56,7 +56,11 @@ impl PubProject {
         }
     }
 
-    pub async fn store_record(fetch: &State<Fetch>, project_id: i32, new_record: PubNewRecord) -> Result<PubRecord, Status> {
+    pub async fn store_record(
+        fetch: &State<Fetch>,
+        project_id: i32,
+        new_record: PubNewRecord,
+    ) -> Result<PubRecord, Status> {
         let robot_token = match Fetch::robot_token().await {
             Ok(token) => token,
             Err(_) => return Err(Status::InternalServerError),

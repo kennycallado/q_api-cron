@@ -66,6 +66,5 @@ impl PubToken {
             }
             Err(_) => Err(Status::InternalServerError),
         }
-
     }
 }
