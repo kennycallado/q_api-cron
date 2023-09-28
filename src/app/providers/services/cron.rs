@@ -27,7 +27,7 @@ impl ContextTrait<Context<ContextDb>> for Context<ContextDb> {
         use crate::app::modules::escalon::model::{EJob, NewEJob};
         use crate::database::schema::{cronjobs, escalonjobs};
 
-        let job: EJob = job.clone().into();
+        let job: EJob = job.into();
 
         context
             .db_pool
@@ -53,7 +53,6 @@ impl CronManager {
             Some(pool) => pool.clone(), // clone the wrapped pool
             None => return rocket,
         };
-
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(5))
             .build()
@@ -63,6 +62,7 @@ impl CronManager {
             db_pool: pool,
             fetch: client,
         });
+
         let mut manager = manager
             .set_id(ConfigGetter::get_identity())
             .set_addr("0.0.0.0".parse::<IpAddr>().unwrap())

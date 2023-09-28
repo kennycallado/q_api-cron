@@ -4,10 +4,10 @@ version = "0.1.5"
 edition = "2021"
 
 [features]
-default = ["cron", "db"]
+default = ["cron"]
 full  =  ["db", "fetch", "cron", "push"]
 
-cron  = ["tokio-cron-scheduler", "reqwest", "escalon-jobs"]
+cron  = ["tokio-cron-scheduler", "reqwest", "escalon-jobs", "db"]
 db    = ["diesel", "diesel_migrations", "rocket_sync_db_pools"]
 fetch = ["reqwest"]
 push  = ["web-push-native", "base64ct", "hyper", "hyper-rustls"]

@@ -1,10 +1,7 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
 use rocket::serde::uuid::Uuid;
 use serde::{Deserialize, Serialize};
-// #[cfg(all(feature = "db", feature = "cron"))]
-// use diesel::PgConnection;
 
-// #[cfg(all(feature = "db", feature = "cron"))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct PubCronJob {
@@ -25,7 +22,6 @@ pub struct PubEJob {
     pub until: Option<NaiveDateTime>,
 }
 
-// #[cfg(all(feature = "db", feature = "cron"))]
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct PubNewCronJob {
@@ -34,7 +30,6 @@ pub struct PubNewCronJob {
     pub job: NewEJob,
 }
 
-// #[cfg(all(feature = "db", feature = "cron"))]
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct NewEJob {
@@ -43,7 +38,6 @@ pub struct NewEJob {
     pub until: Option<NaiveDateTime>,
 }
 
-// #[cfg(all(feature = "db", feature = "cron"))]
 impl From<PubCronJob> for PubNewCronJob {
     fn from(cronjob: PubCronJob) -> Self {
         PubNewCronJob {

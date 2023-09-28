@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::app::providers::config_getter::ConfigGetter;
 use crate::app::providers::models::record::{PubNewRecord, PubRecord};
-
 #[cfg(feature = "fetch")]
 use crate::app::providers::services::fetch::Fetch;
 
