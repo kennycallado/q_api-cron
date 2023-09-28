@@ -1,24 +1,19 @@
 use diesel::prelude::*;
 use rocket::serde::uuid::Uuid;
 
-use crate::app::modules::cron::model::{CronJob, NewCronJob, CronJobComplete};
+use crate::app::modules::cron::model::{CronJob, CronJobComplete, NewCronJob};
 use crate::app::modules::escalon::model::EJob;
 use crate::database::connection::Db;
 use crate::database::schema::{cronjobs, escalonjobs};
 
 pub async fn get_all(db: &Db) -> Result<Vec<CronJob>, diesel::result::Error> {
-    db.run(move |conn| {
-        cronjobs::table
-            .load::<CronJob>(conn)
-    }).await
+    db.run(move |conn| cronjobs::table.load::<CronJob>(conn))
+        .await
 }
 
 pub async fn get_by_id(db: &Db, id: i32) -> Result<CronJob, diesel::result::Error> {
-    db.run(move |conn| {
-        cronjobs::table
-            .find(id)
-            .first::<CronJob>(conn)
-    }).await
+    db.run(move |conn| cronjobs::table.find(id).first::<CronJob>(conn))
+        .await
 }
 
 pub async fn get_by_job_id(db: &Db, job_id: Uuid) -> Result<CronJob, diesel::result::Error> {
@@ -26,14 +21,13 @@ pub async fn get_by_job_id(db: &Db, job_id: Uuid) -> Result<CronJob, diesel::res
         cronjobs::table
             .filter(cronjobs::job_id.eq(job_id))
             .first::<CronJob>(conn)
-    }).await
+    })
+    .await
 }
 
 pub async fn get_complete(db: &Db, id: i32) -> Result<CronJobComplete, diesel::result::Error> {
     db.run(move |conn| {
-        let app_job = cronjobs::table
-            .find(id)
-            .first::<CronJob>(conn)?;
+        let app_job = cronjobs::table.find(id).first::<CronJob>(conn)?;
 
         let escalon_job = escalonjobs::table
             .find(app_job.job_id)
@@ -46,10 +40,14 @@ pub async fn get_complete(db: &Db, id: i32) -> Result<CronJobComplete, diesel::r
             route: app_job.route,
             job: escalon_job,
         })
-    }).await
+    })
+    .await
 }
 
-pub async fn create(db: &Db, app_job: NewCronJob) -> Result<CronJobComplete, diesel::result::Error> {
+pub async fn create(
+    db: &Db,
+    app_job: NewCronJob,
+) -> Result<CronJobComplete, diesel::result::Error> {
     db.run(move |conn| {
         let app_job = diesel::insert_into(cronjobs::table)
             .values(app_job)
@@ -66,5 +64,6 @@ pub async fn create(db: &Db, app_job: NewCronJob) -> Result<CronJobComplete, die
             route: app_job.route,
             job: escalon_job,
         })
-    }).await
+    })
+    .await
 }

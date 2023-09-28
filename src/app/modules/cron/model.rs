@@ -1,9 +1,9 @@
-use chrono::{DateTime, Utc, NaiveDateTime};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use rocket::serde::uuid::Uuid;
 use serde::{Deserialize, Serialize};
 
-use crate::app::providers::models::cronjob::PubCronJob;
 use crate::app::modules::escalon::model::{EJob, NewEJob};
+use crate::app::providers::models::cronjob::PubCronJob;
 use crate::database::schema::cronjobs;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Queryable, Identifiable)]

@@ -1,19 +1,23 @@
-use chrono::{NaiveDateTime, DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::PgConnection;
 use escalon_jobs::EscalonJobStatus;
+use escalon_jobs::{EscalonJob, EscalonJobTrait, NewEscalonJob};
 use rocket::serde::uuid::Uuid;
-use serde::{Deserialize, Serialize};
-use escalon_jobs::{NewEscalonJob, EscalonJobTrait, EscalonJob};
 use rocket_sync_db_pools::ConnectionPool;
+use serde::{Deserialize, Serialize};
 
+use crate::app::modules::cron::model::CronJob;
 use crate::app::providers::models::cronjob::PubEJob;
+use crate::app::providers::services::cron::{Context, ContextDb};
 use crate::database::connection::Db;
 use crate::database::schema::escalonjobs;
 
 // use crate::app::server::Context;
 // use crate::app::modules::cron::model::{NewAppJob, AppJob, AppJobComplete};
 
-#[derive(Debug, Clone, Deserialize, Serialize, Queryable, Identifiable, Insertable, AsChangeset)]
+#[derive(
+    Debug, Clone, Deserialize, Serialize, Queryable, Identifiable, Insertable, AsChangeset,
+)]
 #[diesel(table_name = escalonjobs)]
 #[serde(crate = "rocket::serde")]
 pub struct EJob {
@@ -45,8 +49,12 @@ impl From<EJob> for NewEJob {
     fn from(ejob: EJob) -> Self {
         Self {
             schedule: ejob.schedule,
-            since: ejob.since.map(|d| DateTime::from_naive_utc_and_offset(d, Utc)),
-            until: ejob.until.map(|d| DateTime::from_naive_utc_and_offset(d, Utc)),
+            since: ejob
+                .since
+                .map(|d| DateTime::from_naive_utc_and_offset(d, Utc)),
+            until: ejob
+                .until
+                .map(|d| DateTime::from_naive_utc_and_offset(d, Utc)),
         }
     }
 }
@@ -80,31 +88,33 @@ impl From<NewEJob> for NewEscalonJob {
     }
 }
 
-// #[async_trait]
-// impl EscalonJobTrait<Context<ConnectionPool<Db, PgConnection>>> for NewEJob {
-//     async fn run_job(&self, _ctx: Context<ConnectionPool<Db, PgConnection>>, job: EscalonJob) -> EscalonJob {
-//         println!("running job: {}", job.job_id);
-//         // use diesel::prelude::*;
-//         // use crate::database::schema::{appjobs, escalonjobs};
+#[rocket::async_trait]
+impl EscalonJobTrait<Context<ContextDb>> for NewEJob {
+    async fn run_job(&self, context: &Context<ContextDb>, job: EscalonJob) -> EscalonJob {
+        use crate::database::schema::{cronjobs, escalonjobs};
+        use diesel::prelude::*;
 
-//         // let blah = ctx.0.get().await.unwrap().run(move |conn| {
-//         //     let app_job: AppJob = appjobs::table
-//         //         .filter(appjobs::job_id.eq(job.job_id))
-//         //         .first::<AppJob>(conn).unwrap();
+        // println!("run_job - Job: {:?}", job);
 
-//         //     let escalon_job = escalonjobs::table
-//         //         .find(job.job_id)
-//         //         .first::<EJob>(conn).unwrap();
+        let cron_job: CronJob = context
+            .db_pool
+            .get()
+            .await
+            .unwrap()
+            .run(move |conn| {
+                let cron_job = cronjobs::table
+                    .filter(cronjobs::job_id.eq(job.job_id))
+                    .first::<CronJob>(conn);
 
-//         //     AppJobComplete {
-//         //         id: app_job.id,
-//         //         service: app_job.service,
-//         //         route: app_job.route,
-//         //         job: escalon_job,
-//         //     }
+                match cron_job {
+                    Ok(cron_job) => cron_job,
+                    Err(_) => panic!("Cron job not found"),
+                }
+            })
+            .await;
 
-//         // }).await;
+        println!("Running job - {}", cron_job.service);
 
-//         job
-//     }
-// }
+        job
+    }
+}

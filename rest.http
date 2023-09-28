@@ -33,27 +33,22 @@ Accept: application/json
 
 # {{{ cron
 
-GET http://localhost:8000/api/v1/cron/hello
+GET http://localhost:8000/api/v1/cron/1
 Accept: application/json
 Authorization: Bearer 
 Content-type: application/json
 
-GET http://localhost:8000/api/v1/cron/hello/state
-Accept: application/json
-Authorization: Bearer <token>
-Content-type: application/json
-
-POST http://localhost:8000/api/v1/cron
+POST http://localhost:8000/api/v1/cron/
 Accept: application/json
 Authorization: Bearer 
 Content-type: application/json
 
 {
-  "schedule": "0/5 * * * * *",
-  "service": "logic",
-  "route": "checker/steps/project/1",
-  "since": "2023-07-26T17:23:00.0+0200",
-  "until": "2023-07-26T17:24:00.0+0200"
+  "service": "servicio",
+  "route": "ruta",
+  "job": {
+    "schedule": "0/10 * * * * *"
+  }
 }
 
 

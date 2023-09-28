@@ -1,3 +1,3 @@
 pub mod controller;
-mod model;
-mod services;
+pub mod model;
+pub mod services;

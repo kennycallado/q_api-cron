@@ -1,5 +1,8 @@
 # q_api-base
 
+## TODO
+- [ ] falta implementación correcta del trait escalonjobtrait
+
 ## Changelog
 
 ### v0.1.5

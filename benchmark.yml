@@ -15,9 +15,9 @@
 # compara reporte con límite 1ms
 # drill --benchmark benchmark.yml --compare result --threshold 1
 
-concurrency: 4
-base: 'http://localhost:8000'
-iterations: 10
+concurrency: 2
+base: 'http://localhost:8001'
+iterations: 100
 
 plan:
   # - name: Include comments
@@ -54,10 +54,7 @@ plan:
         Accept: application/json
         Authorization: Bearer {{ TOKEN }}
         Content-Type: application/json
-      body: '{
-        "schedule": "1 * * * * *",
-        "service": "logic",
-        "route": "checker/steps/project/1" }'
+      body: '{ "service": "servicio {{ iteration }}", "route": "ruta", "job": { "schedule": "0/5 * * * * *" } }'
     tags: [ post-cron ]
 
 ---
