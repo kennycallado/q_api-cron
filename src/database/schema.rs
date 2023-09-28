@@ -22,7 +22,4 @@ diesel::table! {
 
 diesel::joinable!(cronjobs -> escalonjobs (job_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    cronjobs,
-    escalonjobs,
-);
+diesel::allow_tables_to_appear_in_same_query!(cronjobs, escalonjobs,);
