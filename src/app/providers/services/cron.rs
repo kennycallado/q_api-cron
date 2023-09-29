@@ -104,6 +104,8 @@ impl CronManager {
                 let own_jobs: Vec<(i32, EJob)> = cronjobs::table
                     .inner_join(escalonjobs::table)
                     .filter(cronjobs::owner.eq(ConfigGetter::get_identity()))
+                    .filter(escalonjobs::status.ne("done"))
+                    .filter(escalonjobs::status.ne("failed"))
                     .select((cronjobs::id, escalonjobs::all_columns))
                     .load::<(i32, EJob)>(conn)
                     .unwrap();
@@ -121,40 +123,38 @@ impl CronManager {
 
         // Agrego los jobs propios
         for job in jobs.0 {
-            if job.1.status != "done" || job.1.status != "failed" {
-                let old_uuid = job.1.id;
-                let new_ejob: NewEJob = job.1.into();
-                let escalon_job = self.inner().add_job(new_ejob).await;
-                let ejob: EJob = escalon_job.clone().into();
+            let old_uuid = job.1.id;
+            let new_ejob: NewEJob = job.1.into();
+            let escalon_job = self.inner().add_job(new_ejob).await;
+            let ejob: EJob = escalon_job.clone().into();
 
-                self.inner()
-                    .context
-                    .db_pool
-                    .get()
-                    .await
-                    .unwrap()
-                    .run(move |conn| {
-                        diesel::insert_into(escalonjobs::table)
-                            .values(ejob)
-                            .execute(conn)
-                            .unwrap();
+            self.inner()
+                .context
+                .db_pool
+                .get()
+                .await
+                .unwrap()
+                .run(move |conn| {
+                    diesel::insert_into(escalonjobs::table)
+                        .values(ejob)
+                        .execute(conn)
+                        .unwrap();
 
-                        diesel::update(cronjobs::table)
-                            .filter(cronjobs::id.eq(job.0))
-                            .set((
-                                cronjobs::owner.eq(ConfigGetter::get_identity()),
-                                cronjobs::job_id.eq(&escalon_job.job_id),
-                            ))
-                            .execute(conn)
-                            .unwrap();
+                    diesel::update(cronjobs::table)
+                        .filter(cronjobs::id.eq(job.0))
+                        .set((
+                            cronjobs::owner.eq(ConfigGetter::get_identity()),
+                            cronjobs::job_id.eq(&escalon_job.job_id),
+                        ))
+                        .execute(conn)
+                        .unwrap();
 
-                        diesel::delete(escalonjobs::table)
-                            .filter(escalonjobs::id.eq(old_uuid))
-                            .execute(conn)
-                            .unwrap();
-                    })
-                    .await;
-            }
+                    diesel::delete(escalonjobs::table)
+                        .filter(escalonjobs::id.eq(old_uuid))
+                        .execute(conn)
+                        .unwrap();
+                })
+                .await;
         }
 
         if jobs.1.len() > 0 {
@@ -167,9 +167,7 @@ impl CronManager {
                 for job in jobs {
                     let clients = manager.clients.clone().unwrap();
 
-                    if !clients.lock().unwrap().contains_key(&job.0 .1)
-                        && (job.1.status != "done" || job.1.status != "failed")
-                    {
+                    if !clients.lock().unwrap().contains_key(&job.0 .1) {
                         let old_uuid = job.1.id;
                         let new_ejob: NewEJob = job.1.into();
                         let escalon_job = manager.add_job(new_ejob).await;
