@@ -1,5 +1,4 @@
 use rocket::http::Status;
-
 use rocket::serde::json::Json;
 use rocket::serde::uuid::Uuid;
 use rocket::State;
@@ -34,8 +33,6 @@ pub async fn show(db: Db, id: i32) -> Json<PubCronJob> {
     Json(job.into())
 }
 
-// pub async fn create(db: Db, jm: &State<EscalonJobsManager<Context<ConnectionPool<Db, PgConnection>>>>, new_job: Json<PostNewCronJob>) -> Json<CronJobComplete> {
-//
 #[post("/", data = "<new_job>")]
 pub async fn create(
     db: Db,
@@ -44,8 +41,8 @@ pub async fn create(
 ) -> Json<CronJobComplete> {
     let post_job = new_job.into_inner();
 
-    let escalon_job = jm.inner().inner().add_job(post_job.job.clone()).await;
-    escalon_repository::insert(&db, escalon_job.clone().into())
+    let escalon = jm.inner().inner().add_job(post_job.job.clone()).await;
+    let job = escalon_repository::insert(&db, escalon.clone().into())
         .await
         .unwrap();
 
@@ -53,10 +50,18 @@ pub async fn create(
         owner: ConfigGetter::get_identity(),
         service: post_job.service,
         route: post_job.route,
-        job_id: escalon_job.job_id.clone(),
+        job_id: escalon.job_id,
     };
 
-    let job = cron_repository::create(&db, new_job).await.unwrap();
+    let cron_job = cron_repository::insert(&db, new_job).await.unwrap();
 
-    Json(job.into())
+    let job = CronJobComplete {
+        id: cron_job.id,
+        owner: cron_job.owner,
+        service: cron_job.service,
+        route: cron_job.route,
+        job,
+    };
+
+    Json(job)
 }

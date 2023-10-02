@@ -3,6 +3,7 @@ use rocket::serde::uuid::Uuid;
 use serde::{Deserialize, Serialize};
 
 use crate::app::modules::escalon::model::{EJob, NewEJob};
+use crate::app::providers::config_getter::ConfigGetter;
 use crate::app::providers::models::cronjob::PubCronJob;
 use crate::database::schema::cronjobs;
 

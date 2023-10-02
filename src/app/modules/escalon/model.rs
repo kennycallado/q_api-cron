@@ -7,13 +7,12 @@ use rocket_sync_db_pools::ConnectionPool;
 use serde::{Deserialize, Serialize};
 
 use crate::app::modules::cron::model::CronJob;
+use crate::app::providers::config_getter::ConfigGetter;
 use crate::app::providers::models::cronjob::PubEJob;
+use crate::app::providers::services::claims::{Claims, UserInClaims};
 use crate::app::providers::services::cron::{Context, ContextDb};
 use crate::database::connection::Db;
 use crate::database::schema::escalonjobs;
-
-// use crate::app::server::Context;
-// use crate::app::modules::cron::model::{NewAppJob, AppJob, AppJobComplete};
 
 #[derive(
     Debug, Clone, Deserialize, Serialize, Queryable, Identifiable, Insertable, AsChangeset,
