@@ -90,11 +90,9 @@ impl From<NewEJob> for NewEscalonJob {
 
 #[rocket::async_trait]
 impl EscalonJobTrait<Context<ContextDb>> for NewEJob {
-    async fn run_job(&self, context: &Context<ContextDb>, job: EscalonJob) -> EscalonJob {
+    async fn run_job(&self, context: &Context<ContextDb>, mut job: EscalonJob) -> EscalonJob {
         use crate::database::schema::{cronjobs, escalonjobs};
         use diesel::prelude::*;
-
-        // println!("run_job - Job: {:?}", job);
 
         let cron_job: CronJob = context
             .db_pool
@@ -113,8 +111,34 @@ impl EscalonJobTrait<Context<ContextDb>> for NewEJob {
             })
             .await;
 
-        println!("Running job - {}", cron_job.service);
+        let robo_token = Claims::from(UserInClaims::default()).enconde_for_robot();
+        let service = ConfigGetter::get_entity_url(&cron_job.service).unwrap();
+        let url = format!("{}{}", service, cron_job.route);
 
-        job
+        let res = context
+            .fetch
+            .get(url)
+            .bearer_auth(robo_token.unwrap())
+            .header("Accept", "application/json")
+            .send()
+            .await;
+
+        match res {
+            Ok(res) => {
+                if !res.status().is_success() {
+                    job.status = EscalonJobStatus::Failed;
+                    println!("No success");
+                }
+
+                job
+            }
+            Err(e) => {
+                println!("Err: Failed");
+                println!("Err: {}", e);
+                job.status = EscalonJobStatus::Failed;
+
+                job
+            }
+        }
     }
 }
