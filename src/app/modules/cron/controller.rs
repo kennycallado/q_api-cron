@@ -4,19 +4,34 @@ use rocket::serde::uuid::Uuid;
 use rocket::State;
 use tokio_cron_scheduler::{Job, JobScheduler, JobSchedulerError};
 
-use crate::app::modules::cron::model::{CronJob, CronJobComplete, NewCronJob, PostNewCronJob};
 use crate::app::providers::config_getter::ConfigGetter;
 use crate::app::providers::guards::claims::AccessClaims;
-use crate::app::providers::models::cronjob::{PubCronJob, PubNewCronJob};
+use crate::app::providers::models::cronjob::PubNewCronJob;
 use crate::app::providers::services::claims::{Claims, UserInClaims};
 use crate::app::providers::services::cron::CronManager;
 use crate::database::connection::Db;
+
+use crate::app::modules::cron::model::{CronJob, CronJobComplete, NewCronJob, PostNewCronJob};
+use crate::app::modules::cron::handlers::{index, show, create, delete};
 
 use crate::app::modules::cron::services::repository as cron_repository;
 use crate::app::modules::escalon::services::repository as escalon_repository;
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, show, create, delete]
+    routes![
+        options_all,
+
+        get_index,
+        get_index_none,
+        get_show,
+        get_show_none,
+
+        post_create,
+        post_create_none,
+
+        delete_remove,
+        delete_remove_none,
+    ]
 }
 
 #[options("/<_..>")]
@@ -24,60 +39,82 @@ pub fn options_all() -> Status {
     Status::Ok
 }
 
-#[get("/")]
-pub async fn index(db: Db) -> Json<Vec<CronJob>> {
-    let jobs = cron_repository::get_all(&db).await.unwrap();
-
-    Json(jobs)
+#[get("/", rank = 1)]
+pub async fn get_index(db: Db, claims: AccessClaims) -> Result<Json<Vec<CronJob>>, Status> {
+    match claims.0.user.role.name.as_str() {
+        "admin" => index::get_index_admin(&db, claims.0.user).await,
+        "coord" => index::get_index_admin(&db, claims.0.user).await,
+        "thera" => index::get_index_admin(&db, claims.0.user).await,
+        _ => {
+            println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
+            Err(Status::BadRequest)
+        }
+    }
 }
 
-#[get("/<id>")]
-pub async fn show(db: Db, id: i32) -> Json<PubCronJob> {
-    let job = cron_repository::get_complete(&db, id).await.unwrap();
-
-    Json(job.into())
+#[get("/", rank = 2)]
+pub async fn get_index_none() -> Status {
+    Status::Unauthorized
 }
 
-#[post("/", data = "<new_job>")]
-pub async fn create(
+#[get("/<id>", rank = 101)]
+pub async fn get_show(db: Db, claims: AccessClaims, id: i32) -> Result<Json<CronJobComplete>, Status> {
+    match claims.0.user.role.name.as_str() {
+        "admin" => show::get_show_admin(&db, claims.0.user, id).await,
+        "coord" => show::get_show_admin(&db, claims.0.user, id).await,
+        "thera" => show::get_show_admin(&db, claims.0.user, id).await,
+        _ => {
+            println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
+            Err(Status::BadRequest)
+        }
+    }
+}
+
+#[get("/<_id>", rank = 102)]
+pub async fn get_show_none(_id: i32) -> Status {
+    Status::Unauthorized
+}
+
+#[post("/", data = "<new_job>", rank = 1)]
+pub async fn post_create(
     db: Db,
+    claims: AccessClaims,
     jm: &State<CronManager>,
     new_job: Json<PostNewCronJob>,
-) -> Json<CronJobComplete> {
-    let post_job = new_job.into_inner();
-
-    let escalon = jm.inner().inner().add_job(post_job.job.clone()).await;
-    let job = escalon_repository::insert(&db, escalon.clone().into())
-        .await
-        .unwrap();
-
-    let new_job = NewCronJob {
-        owner: ConfigGetter::get_identity(),
-        service: post_job.service,
-        route: post_job.route,
-        job_id: escalon.job_id,
-    };
-
-    let cron_job = cron_repository::insert(&db, new_job).await.unwrap();
-
-    let job = CronJobComplete {
-        id: cron_job.id,
-        owner: cron_job.owner,
-        service: cron_job.service,
-        route: cron_job.route,
-        job,
-    };
-
-    Json(job)
+) -> Result<Json<CronJobComplete>, Status> {
+    match claims.0.user.role.name.as_str() {
+        "admin" => create::post_create_admin(&db, claims.0.user, jm.inner(), new_job.into_inner()).await,
+        "coord" => create::post_create_admin(&db, claims.0.user, jm.inner(), new_job.into_inner()).await,
+        "thera" => create::post_create_admin(&db, claims.0.user, jm.inner(), new_job.into_inner()).await,
+        _ => {
+            println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
+            Err(Status::BadRequest)
+        }
+    }
 }
 
-#[delete("/<id>")]
-pub async fn delete(db: Db, jm: &State<CronManager>, id: i32) -> Json<CronJob> {
-    let job = cron_repository::delete(&db, id).await.unwrap();
-    let ejob = escalon_repository::delete(&db, job.job_id).await.unwrap();
+#[post("/", rank = 2)]
+pub async fn post_create_none() -> Status {
+    Status::Unauthorized
+}
 
-    let jm = jm.inner().inner();
-    jm.remove_job(ejob.id).await;
+#[delete("/<id>", rank = 101)]
+pub async fn delete_remove(db: Db,
+    claims: AccessClaims,
+    jm: &State<CronManager>,
+    id: i32) -> Result<Json<CronJob>, Status> {
+    match claims.0.user.role.name.as_str() {
+        "admin" |
+        "coord" |
+        "thera" => delete::delete_remove_admin(&db, claims.0.user, jm.inner(), id).await,
+        _ => {
+            println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
+            Err(Status::BadRequest)
+        }
+    }
+}
 
-    Json(job)
+#[delete("/<_id>", rank = 102)]
+pub async fn delete_remove_none(_id: i32) -> Status {
+    Status::Unauthorized
 }
