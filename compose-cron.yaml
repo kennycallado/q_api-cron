@@ -1,3 +1,7 @@
+#
+# 5,$s/SECRET_KEY="*.*"/SECRET_KEY=""
+#
+
 version: "3.1"
 
 services:
@@ -18,7 +22,7 @@ services:
     environment:
       - ROCKET_ADDRESS="0.0.0.0"
       - ROCKET_PORT=8000
-      - ROCKET_SECRET_KEY="DwawKTG44CItXXGuVVW3zDCZHqxUzh8tYMAJ7p3Tpt8="
+      - ROCKET_SECRET_KEY=""
       - ROCKET_DATABASES={questions={url="postgres://cron:cron@database/cron"}}
     volumes:
       - ./target/x86_64-unknown-linux-musl/release/q-api-cron:/usr/bin/q-api-cron
@@ -34,7 +38,7 @@ services:
     environment:
       - ROCKET_ADDRESS="0.0.0.0"
       - ROCKET_PORT=8000
-      - ROCKET_SECRET_KEY="DwawKTG44CItXXGuVVW3zDCZHqxUzh8tYMAJ7p3Tpt8="
+      - ROCKET_SECRET_KEY=""
       - ROCKET_DATABASES={questions={url="postgres://cron:cron@database/cron"}}
     volumes:
       - ./target/x86_64-unknown-linux-musl/release/q-api-cron:/usr/bin/q-api-cron
@@ -43,4 +47,4 @@ services:
     # ports:
     #   - "8002:8000"
     deploy:
-      replicas: 10
+      replicas: 0

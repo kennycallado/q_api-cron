@@ -44,31 +44,25 @@ Authorization: Bearer
 Content-type: application/json
 
 {
-  "service": "servicio",
-  "route": "ruta",
+  "service": "question",
+  "route": "1",
   "job": {
-    "schedule": "0/10 * * * * *"
+    "schedule": "0/10 * * * * *",
+    "since": "2023-10-04T11:13:00.0+0200",
+    "until": "2023-10-04T11:30:30+0200"
   }
 }
 
+# "schedule": "0/10 * * * * *"
 
-GET http://localhost:8000/api/v1/cron/
+GET http://localhost:8000/api/v1/cron/7
 Accept: application/json
 Authorization: Bearer 
 Content-type: application/json
 
-DELETE http://localhost:8000/api/v1/cron/
+DELETE http://localhost:8000/api/v1/cron/2
 Accept: application/json
 Authorization: Bearer 
-Content-type: application/json
-
-# }}}
-
-# {{{ state
-
-GET http://localhost:8000/api/v1/state/hello
-Accept: application/json
-Authorization: Bearer <token>
 Content-type: application/json
 
 # }}}
