@@ -16,7 +16,7 @@ use crate::app::modules::cron::services::repository as cron_repository;
 use crate::app::modules::escalon::services::repository as escalon_repository;
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, show, create]
+    routes![index, show, create, delete]
 }
 
 #[get("/")]
@@ -62,6 +62,17 @@ pub async fn create(
         route: cron_job.route,
         job,
     };
+
+    Json(job)
+}
+
+#[delete("/<id>")]
+pub async fn delete(db: Db, jm: &State<CronManager>, id: i32) -> Json<CronJob> {
+    let job = cron_repository::delete(&db, id).await.unwrap();
+    let ejob = escalon_repository::delete(&db, job.job_id).await.unwrap();
+
+    let jm = jm.inner().inner();
+    jm.remove_job(ejob.id).await;
 
     Json(job)
 }
