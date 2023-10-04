@@ -12,6 +12,6 @@ pub async fn get_show_admin(db: &Db, _admin: UserInClaims, id: i32) -> Result<Js
 
     match job {
         Ok(job) => Ok(Json(job.into())),
-        Err(_) => Err(Status::BadRequest),
+        Err(_) => Err(Status::NotFound),
     }
 }
