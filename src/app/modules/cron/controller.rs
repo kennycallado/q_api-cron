@@ -19,6 +19,11 @@ pub fn routes() -> Vec<rocket::Route> {
     routes![index, show, create, delete]
 }
 
+#[options("/<_..>")]
+pub fn options_all() -> Status {
+    Status::Ok
+}
+
 #[get("/")]
 pub async fn index(db: Db) -> Json<Vec<CronJob>> {
     let jobs = cron_repository::get_all(&db).await.unwrap();
