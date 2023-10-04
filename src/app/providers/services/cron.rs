@@ -50,9 +50,10 @@ pub struct CronManager(pub EscalonJobsManager<Context<ContextDb>>);
 impl CronManager {
     pub async fn init(rocket: Rocket<Build>) -> Rocket<Build> {
         let pool = match Db::pool(&rocket) {
-            Some(pool) => pool.clone(), // clone the wrapped pool
+            Some(pool) => pool.clone(),
             None => return rocket,
         };
+
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(5))
             .build()
@@ -71,7 +72,6 @@ impl CronManager {
             .build()
             .await;
 
-        // self.0.context.0 = Some(pool);
         manager.init().await;
 
         let cron_manager = CronManager(manager);
@@ -157,7 +157,7 @@ impl CronManager {
                 .await;
         }
 
-        if jobs.1.len() > 0 {
+        if !jobs.1.is_empty() {
             let jobs = jobs.1.clone();
             let manager = self.inner().clone();
 
@@ -208,6 +208,7 @@ impl CronManager {
 }
 
 struct Functions;
+
 #[async_trait]
 impl EscalonJobsManagerTrait<Context<ContextDb>> for Functions {
     async fn take_jobs(
@@ -221,10 +222,6 @@ impl EscalonJobsManagerTrait<Context<ContextDb>> for Functions {
 
         use crate::app::modules::escalon::model::{EJob, NewEJob};
         use crate::database::schema::{cronjobs, escalonjobs};
-
-        // if from_client == ConfigGetter::get_identity() {
-        //     return Ok(Vec::new());
-        // }
 
         let jobs: Vec<(i32, EJob)> = manager
             .context
@@ -293,11 +290,12 @@ impl EscalonJobsManagerTrait<Context<ContextDb>> for Functions {
 
         use crate::database::schema::{cronjobs, escalonjobs};
 
-        let mut affected_rows: usize = 0;
+        // let mut affected_rows: usize = 0;
         for ejob_id in jobs {
             let ejob_id = Uuid::parse_str(ejob_id.as_str()).unwrap();
 
-            let rows = manager
+            // let rows = manager
+            manager
                 .context
                 .db_pool
                 .get()
@@ -311,9 +309,9 @@ impl EscalonJobsManagerTrait<Context<ContextDb>> for Functions {
                 })
                 .await;
 
-            affected_rows += rows;
+            // affected_rows += rows;
 
-            if let Some(_) = manager.get_job(ejob_id).await {
+            if (manager.get_job(ejob_id).await).is_some() {
                 manager.remove_job(ejob_id).await;
             }
         }
