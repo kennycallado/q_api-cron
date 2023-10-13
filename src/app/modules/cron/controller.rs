@@ -25,6 +25,8 @@ pub fn routes() -> Vec<rocket::Route> {
         get_index_none,
         get_show,
         get_show_none,
+        get_retry,
+        get_retry_none,
 
         post_create,
         post_create_none,
@@ -42,8 +44,8 @@ pub fn options_all() -> Status {
 #[get("/", rank = 1)]
 pub async fn get_index(db: Db, claims: AccessClaims) -> Result<Json<Vec<CronJob>>, Status> {
     match claims.0.user.role.name.as_str() {
-        "admin" => index::get_index_admin(&db, claims.0.user).await,
-        "coord" => index::get_index_admin(&db, claims.0.user).await,
+        "admin" |
+        "coord" |
         "thera" => index::get_index_admin(&db, claims.0.user).await,
         _ => {
             println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
@@ -60,8 +62,8 @@ pub async fn get_index_none() -> Status {
 #[get("/<id>", rank = 101)]
 pub async fn get_show(db: Db, claims: AccessClaims, id: i32) -> Result<Json<CronJobComplete>, Status> {
     match claims.0.user.role.name.as_str() {
-        "admin" => show::get_show_admin(&db, claims.0.user, id).await,
-        "coord" => show::get_show_admin(&db, claims.0.user, id).await,
+        "admin" |
+        "coord" |
         "thera" => show::get_show_admin(&db, claims.0.user, id).await,
         _ => {
             println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
@@ -83,8 +85,8 @@ pub async fn post_create(
     new_job: Json<PostNewCronJob>,
 ) -> Result<Json<CronJobComplete>, Status> {
     match claims.0.user.role.name.as_str() {
-        "admin" => create::post_create_admin(&db, claims.0.user, jm.inner(), new_job.into_inner()).await,
-        "coord" => create::post_create_admin(&db, claims.0.user, jm.inner(), new_job.into_inner()).await,
+        "admin" |
+        "coord" |
         "thera" => create::post_create_admin(&db, claims.0.user, jm.inner(), new_job.into_inner()).await,
         _ => {
             println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
@@ -116,5 +118,23 @@ pub async fn delete_remove(db: Db,
 
 #[delete("/<_id>", rank = 102)]
 pub async fn delete_remove_none(_id: i32) -> Status {
+    Status::Unauthorized
+}
+
+#[get("/<id>/retry", rank = 1)]
+pub async fn get_retry(db: Db, claims: AccessClaims, jm: &State<CronManager>, id: i32) -> Result<Json<CronJobComplete>, Status> {
+    match claims.0.user.role.name.as_str() {
+        "admin" |
+        "coord" |
+        "thera" => show::get_retry_admin(&db, jm.inner(), claims.0.user, id).await,
+        _ => {
+            println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
+            Err(Status::BadRequest)
+        }
+    }
+}
+
+#[get("/<_id>/retry", rank = 2)]
+pub async fn get_retry_none(_id: i32) -> Status {
     Status::Unauthorized
 }

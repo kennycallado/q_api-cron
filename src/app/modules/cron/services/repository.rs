@@ -53,6 +53,14 @@ pub async fn insert(db: &Db, app_job: NewCronJob) -> Result<CronJob, diesel::res
     .await
 }
 
+pub async fn update(db: &Db, id: i32, app_job: NewCronJob) -> Result<CronJob, diesel::result::Error> {
+    db.run(move |conn| {
+        diesel::update(cronjobs::table.find(id))
+            .set(&app_job)
+            .get_result::<CronJob>(conn)
+    }).await
+}
+
 pub async fn delete(db: &Db, id: i32) -> Result<CronJob, diesel::result::Error> {
     db.run(move |conn| {
         diesel::delete(cronjobs::table.find(id)).get_result::<CronJob>(conn)
