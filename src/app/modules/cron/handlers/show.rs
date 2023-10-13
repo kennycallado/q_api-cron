@@ -28,6 +28,10 @@ pub async fn get_retry_admin(db: &Db, jm: &CronManager, _admin: UserInClaims, id
             let old_ejob = old_job.job.clone();
             let new_ejob: NewEJob = old_job.job.clone().into();
 
+            if old_ejob.status != "failed" {
+                return Err(Status::BadRequest)
+            }
+
             let escalon = jm.inner().add_job(new_ejob).await;
             let job = match escalon_repository::insert(&db, escalon.clone().into()).await {
                 Ok(job) => job,
