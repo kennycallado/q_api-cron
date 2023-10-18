@@ -31,7 +31,7 @@ services:
     deploy:
       replicas: 1
     ports:
-      - "8001:8000"
+      - "8000:8000"
 
   cron-2:
     image: debian:stable-slim
@@ -45,6 +45,6 @@ services:
     command: ["q-api-cron"]
     depends_on: ["cron-1"]
     # ports:
-    #   - "8002:8000"
+    #   - "8001:8000"
     deploy:
       replicas: 0

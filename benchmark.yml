@@ -15,9 +15,9 @@
 # compara reporte con límite 1ms
 # drill --benchmark benchmark.yml --compare result --threshold 1
 
-concurrency: 2
-base: 'http://localhost:8001'
-iterations: 100
+concurrency: 16
+base: 'http://localhost:8000'
+iterations: 1000
 
 plan:
   # - name: Include comments
@@ -45,7 +45,6 @@ plan:
         Accept: application/json
     tags: [ health ]
 
-
   - name: Post add cron
     request:
       method: POST
@@ -54,7 +53,27 @@ plan:
         Accept: application/json
         Authorization: Bearer {{ TOKEN }}
         Content-Type: application/json
-      body: '{ "service": "servicio {{ iteration }}", "route": "ruta", "job": { "schedule": "0/5 * * * * *" } }'
+      body: '{ "service": "question", "route": "1", "job": { "schedule": "0/5 * * * * *" } }'
     tags: [ post-cron ]
+
+  - name: Get index
+    request:
+      method: GET
+      url: '/api/v1/cron'
+      headers:
+        Accept: application/json
+        Authorization: Bearer {{ TOKEN }}
+        Content-Type: application/json
+    tags: [ get-index ]
+
+  - name: Get show
+    request:
+      method: GET
+      url: '/api/v1/cron/{{ iteration }}'
+      headers:
+        Accept: application/json
+        Authorization: Bearer {{ TOKEN }}
+        Content-Type: application/json
+    tags: [ get-show ]
 
 ---
