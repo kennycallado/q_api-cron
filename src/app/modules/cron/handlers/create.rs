@@ -1,7 +1,7 @@
 use rocket::http::Status;
 use rocket::serde::json::Json;
 
-use crate::app::modules::cron::model::{CronJob, NewCronJob, CronJobComplete, PostNewCronJob};
+use crate::app::modules::cron::model::{CronJob, CronJobComplete, NewCronJob, PostNewCronJob};
 use crate::app::providers::config_getter::ConfigGetter;
 use crate::app::providers::models::cronjob::PubCronJob;
 use crate::app::providers::services::claims::UserInClaims;
@@ -11,12 +11,20 @@ use crate::database::connection::Db;
 use crate::app::modules::cron::services::repository as cron_repository;
 use crate::app::modules::escalon::services::repository as escalon_repository;
 
-pub async fn post_create_admin(db: &Db, _admin: UserInClaims, jm: &CronManager, post_job: PostNewCronJob) -> Result<Json<CronJobComplete>, Status> {
+pub async fn post_create_admin(
+    db: &Db,
+    _admin: UserInClaims,
+    jm: &CronManager,
+    post_job: PostNewCronJob,
+) -> Result<Json<CronJobComplete>, Status> {
     let escalon = jm.inner().add_job(post_job.job.clone()).await;
     let job = match escalon_repository::insert(&db, escalon.clone().into()).await {
         Ok(job) => job,
         Err(e) => {
-            println!("Error: post_create_admin; escalon_repository::insert: {}", e);
+            println!(
+                "Error: post_create_admin; escalon_repository::insert: {}",
+                e
+            );
             return Err(Status::InternalServerError);
         }
     };

@@ -11,7 +11,11 @@ use crate::database::connection::Db;
 use crate::app::modules::cron::services::repository as cron_repository;
 use crate::app::modules::escalon::services::repository as escalon_repository;
 
-pub async fn get_show_admin(db: &Db, _admin: UserInClaims, id: i32) -> Result<Json<CronJobComplete>, Status> {
+pub async fn get_show_admin(
+    db: &Db,
+    _admin: UserInClaims,
+    id: i32,
+) -> Result<Json<CronJobComplete>, Status> {
     let job = cron_repository::get_complete(&db, id).await;
 
     match job {
@@ -20,7 +24,12 @@ pub async fn get_show_admin(db: &Db, _admin: UserInClaims, id: i32) -> Result<Js
     }
 }
 
-pub async fn get_retry_admin(db: &Db, jm: &CronManager, _admin: UserInClaims, id: i32) -> Result<Json<CronJobComplete>, Status> {
+pub async fn get_retry_admin(
+    db: &Db,
+    jm: &CronManager,
+    _admin: UserInClaims,
+    id: i32,
+) -> Result<Json<CronJobComplete>, Status> {
     let old_job = cron_repository::get_complete(&db, id).await;
 
     match old_job {
@@ -29,7 +38,7 @@ pub async fn get_retry_admin(db: &Db, jm: &CronManager, _admin: UserInClaims, id
             let new_ejob: NewEJob = old_job.job.clone().into();
 
             if old_ejob.status != "failed" {
-                return Err(Status::BadRequest)
+                return Err(Status::BadRequest);
             }
 
             let escalon = jm.inner().add_job(new_ejob).await;
@@ -40,7 +49,7 @@ pub async fn get_retry_admin(db: &Db, jm: &CronManager, _admin: UserInClaims, id
                     return Err(Status::InternalServerError);
                 }
             };
-            
+
             let new_job = NewCronJob {
                 owner: ConfigGetter::get_identity(),
                 service: old_job.service,
@@ -69,7 +78,7 @@ pub async fn get_retry_admin(db: &Db, jm: &CronManager, _admin: UserInClaims, id
             };
 
             Ok(Json(job.into()))
-        },
+        }
         Err(_) => Err(Status::NotFound),
     }
 }
