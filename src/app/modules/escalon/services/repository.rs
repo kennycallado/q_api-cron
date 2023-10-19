@@ -15,8 +15,6 @@ pub async fn insert(db: &Db, escalon_job: EJob) -> Result<EJob, diesel::result::
 }
 
 pub async fn delete(db: &Db, id: Uuid) -> Result<EJob, diesel::result::Error> {
-    db.run(move |conn| {
-        diesel::delete(escalonjobs::table.find(id)).get_result::<EJob>(conn)
-    })
-    .await
+    db.run(move |conn| diesel::delete(escalonjobs::table.find(id)).get_result::<EJob>(conn))
+        .await
 }
