@@ -4,6 +4,7 @@
 [default]
 ident      = "questions_api-cron"
 port       = 8000
+udp_port   = 65056
 # address    = "0.0.0.0"
 origin_url = "http://localhost:8000,http://localhost:8080"
 # secret_key = ""
