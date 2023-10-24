@@ -167,7 +167,7 @@ impl CronManager {
                 for job in jobs {
                     let clients = manager.clients.clone().unwrap();
 
-                    if !clients.lock().unwrap().contains_key(&job.0 .1) {
+                    if !clients.lock().unwrap().contains_key(&job.0.1) {
                         let old_uuid = job.1.id;
                         let new_ejob: NewEJob = job.1.into();
                         let escalon_job = manager.add_job(new_ejob).await;
