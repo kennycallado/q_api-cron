@@ -4,7 +4,7 @@ version   = "0.1.7"
 edition   = "2021"
 
 [features]
-default   = ["cron", "db_diesel"]
+default   = ["db_diesel", "cron"]
 
 cron      = ["tokio-cron-scheduler", "reqwest", "escalon-jobs"]
 db_diesel = ["diesel", "diesel_migrations", "rocket_sync_db_pools", "openssl"]
