@@ -1,10 +1,10 @@
 [package]
 name      = "q-api-cron"
-version   = "0.1.7"
+version   = "0.1.6"
 edition   = "2021"
 
 [features]
-default   = ["cron", "db_diesel"]
+default   = ["db_diesel", "cron"]
 
 cron      = ["tokio-cron-scheduler", "reqwest", "escalon-jobs"]
 db_diesel = ["diesel", "diesel_migrations", "rocket_sync_db_pools", "openssl"]
@@ -24,9 +24,9 @@ diesel_migrations = { version = "2", features = ["postgres"], optional = true }
 escalon-jobs = { version = "0.1.11", optional = true }
 jsonwebtoken = "8.2.0"
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], optional = true }
-rocket = { version = "0.5.0-rc.3", features = ["json", "secrets", "uuid"] }
-rocket_db_pools = { version = "0.1.0-rc.3", features = ["sqlx_postgres"], optional = true }
-rocket_sync_db_pools = { version = "0.1.0-rc.3", features = ["diesel_postgres_pool"], optional = true }
+rocket = { version = "0.5.0-rc.4", features = ["json", "secrets", "uuid"] }
+rocket_db_pools = { version = "0.1.0-rc.4", features = ["sqlx_postgres"], optional = true }
+rocket_sync_db_pools = { version = "0.1.0-rc.4", features = ["diesel_postgres_pool"], optional = true }
 serde = { version = "1", features = ["derive"] }
 sqlx = { version = "0.6", default-features = false, features = ["macros", "migrate", "time", "chrono", "json"], optional = true }
 tokio-cron-scheduler = { version = "*", optional = true }
