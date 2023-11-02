@@ -9,4 +9,4 @@ CREATE DATABASE papers;
 -- CREATE DATABASE 'logics';
 -- CREATE DATABASE 'logicscron';
 CREATE DATABASE projects;
-CREATE DATABASE cron;
+-- CREATE DATABASE cron;
