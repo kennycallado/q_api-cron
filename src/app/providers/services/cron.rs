@@ -168,18 +168,24 @@ impl CronManager {
                 let clients = manager.clients.clone().unwrap();
                 let own_start_time = manager.start_time.clone().unwrap();
 
-                if clients.lock().unwrap().iter().find(|client| {
-                    let client_time = client.1.start_time;
-                    match client_time.duration_since(own_start_time) {
-                        Ok(_) => true,
-                        Err(_) => false,
-                    }
-                }).is_some() {
-                    return ;
+                if clients
+                    .lock()
+                    .unwrap()
+                    .iter()
+                    .find(|client| {
+                        let client_time = client.1.start_time;
+                        match client_time.duration_since(own_start_time) {
+                            Ok(_) => true,
+                            Err(_) => false,
+                        }
+                    })
+                    .is_some()
+                {
+                    return;
                 }
-                  
+
                 for job in jobs {
-                    if !clients.lock().unwrap().contains_key(&job.0.1) {
+                    if !clients.lock().unwrap().contains_key(&job.0 .1) {
                         let old_uuid = job.1.id;
                         let new_ejob: NewEJob = job.1.into();
                         let escalon_job = manager.add_job(new_ejob).await;
@@ -215,7 +221,7 @@ impl CronManager {
                     }
                 }
 
-                return ;
+                return;
             });
         }
     }
