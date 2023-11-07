@@ -42,11 +42,11 @@ pub fn options_all() -> Status {
 }
 
 #[get("/", rank = 1)]
-pub async fn get_index(db: Db, claims: AccessClaims) -> Result<Json<Vec<CronJob>>, Status> {
+pub async fn get_index(db: &Db, claims: AccessClaims) -> Result<Json<Vec<CronJob>>, Status> {
     match claims.0.user.role.name.as_str() {
         "admin" |
         "coord" |
-        "thera" => index::get_index_admin(&db, claims.0.user).await,
+        "thera" => index::get_index_admin(db, claims.0.user).await,
         _ => {
             println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
             Err(Status::BadRequest)
@@ -60,11 +60,11 @@ pub async fn get_index_none() -> Status {
 }
 
 #[get("/<id>", rank = 101)]
-pub async fn get_show(db: Db, claims: AccessClaims, id: i32) -> Result<Json<CronJobComplete>, Status> {
+pub async fn get_show(db: &Db, claims: AccessClaims, id: i32) -> Result<Json<CronJobComplete>, Status> {
     match claims.0.user.role.name.as_str() {
         "admin" |
         "coord" |
-        "thera" => show::get_show_admin(&db, claims.0.user, id).await,
+        "thera" => show::get_show_admin(db, claims.0.user, id).await,
         _ => {
             println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
             Err(Status::BadRequest)
@@ -72,6 +72,7 @@ pub async fn get_show(db: Db, claims: AccessClaims, id: i32) -> Result<Json<Cron
     }
 }
 
+#[allow(unused_variables)]
 #[get("/<_id>", rank = 102)]
 pub async fn get_show_none(_id: i32) -> Status {
     Status::Unauthorized
@@ -79,7 +80,7 @@ pub async fn get_show_none(_id: i32) -> Status {
 
 #[post("/", data = "<new_job>", rank = 1)]
 pub async fn post_create(
-    db: Db,
+    db: &Db,
     claims: AccessClaims,
     jm: &State<CronManager>,
     new_job: Json<PostNewCronJob>,
@@ -87,7 +88,7 @@ pub async fn post_create(
     match claims.0.user.role.name.as_str() {
         "admin" |
         "coord" |
-        "thera" => create::post_create_admin(&db, claims.0.user, jm.inner(), new_job.into_inner()).await,
+        "thera" => create::post_create_admin(db, claims.0.user, jm.inner(), new_job.into_inner()).await,
         _ => {
             println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
             Err(Status::BadRequest)
@@ -101,14 +102,15 @@ pub async fn post_create_none() -> Status {
 }
 
 #[delete("/<id>", rank = 101)]
-pub async fn delete_remove(db: Db,
+pub async fn delete_remove(
+    db: &Db,
     claims: AccessClaims,
     jm: &State<CronManager>,
     id: i32) -> Result<Json<CronJob>, Status> {
     match claims.0.user.role.name.as_str() {
         "admin" |
         "coord" |
-        "thera" => delete::delete_remove_admin(&db, claims.0.user, jm.inner(), id).await,
+        "thera" => delete::delete_remove_admin(db, claims.0.user, jm.inner(), id).await,
         _ => {
             println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
             Err(Status::BadRequest)
@@ -116,17 +118,18 @@ pub async fn delete_remove(db: Db,
     }
 }
 
-#[delete("/<_id>", rank = 102)]
-pub async fn delete_remove_none(_id: i32) -> Status {
+#[allow(unused_variables)]
+#[delete("/<id>", rank = 102)]
+pub async fn delete_remove_none(id: i32) -> Status {
     Status::Unauthorized
 }
 
 #[get("/<id>/retry", rank = 1)]
-pub async fn get_retry(db: Db, claims: AccessClaims, jm: &State<CronManager>, id: i32) -> Result<Json<CronJobComplete>, Status> {
+pub async fn get_retry(db: &Db, claims: AccessClaims, jm: &State<CronManager>, id: i32) -> Result<Json<CronJobComplete>, Status> {
     match claims.0.user.role.name.as_str() {
         "admin" |
         "coord" |
-        "thera" => show::get_retry_admin(&db, jm.inner(), claims.0.user, id).await,
+        "thera" => show::get_retry_admin(db, jm.inner(), claims.0.user, id).await,
         _ => {
             println!("Error: get_index; Role not handled {}", claims.0.user.role.name);
             Err(Status::BadRequest)
@@ -134,7 +137,8 @@ pub async fn get_retry(db: Db, claims: AccessClaims, jm: &State<CronManager>, id
     }
 }
 
-#[get("/<_id>/retry", rank = 2)]
-pub async fn get_retry_none(_id: i32) -> Status {
+#[allow(unused_variables)]
+#[get("/<id>/retry", rank = 2)]
+pub async fn get_retry_none(id: i32) -> Status {
     Status::Unauthorized
 }

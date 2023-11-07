@@ -1,14 +1,18 @@
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use rocket::serde::uuid::Uuid;
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "db_sqlx")]
+use rocket_db_pools::sqlx::FromRow;
+#[cfg(feature = "db_sqlx")]
+use rocket_db_pools::sqlx;
 
 use crate::app::modules::escalon::model::{EJob, NewEJob};
 use crate::app::providers::config_getter::ConfigGetter;
 use crate::app::providers::models::cronjob::PubCronJob;
-use crate::database::schema::cronjobs;
 
-#[derive(Debug, Clone, Deserialize, Serialize, Queryable, Identifiable)]
-#[diesel(table_name = cronjobs)]
+#[cfg_attr(feature = "db_sqlx", derive(FromRow))]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct CronJob {
     pub id: i32,
@@ -18,8 +22,7 @@ pub struct CronJob {
     pub job_id: Uuid,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Insertable, AsChangeset)]
-#[diesel(table_name = cronjobs)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct NewCronJob {
     pub owner: String,
