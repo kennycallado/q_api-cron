@@ -1,30 +1,25 @@
-use chrono::{DateTime, NaiveDateTime, Utc};
-use diesel::PgConnection;
+use chrono::{DateTime, Utc, NaiveDateTime};
 use escalon_jobs::EscalonJobStatus;
 use escalon_jobs::{EscalonJob, EscalonJobTrait, NewEscalonJob};
 use rocket::serde::uuid::Uuid;
-use rocket_sync_db_pools::ConnectionPool;
 use serde::{Deserialize, Serialize};
+use rocket_db_pools::{sqlx, sqlx::FromRow};
 
 use crate::app::modules::cron::model::CronJob;
 use crate::app::providers::config_getter::ConfigGetter;
 use crate::app::providers::models::cronjob::PubEJob;
 use crate::app::providers::services::claims::{Claims, UserInClaims};
-use crate::app::providers::services::cron::{Context, ContextDb};
+use crate::app::providers::services::cron::Context;
 use crate::database::connection::Db;
-use crate::database::schema::escalonjobs;
 
-#[derive(
-    Debug, Clone, Deserialize, Serialize, Queryable, Identifiable, Insertable, AsChangeset,
-)]
-#[diesel(table_name = escalonjobs)]
+#[derive(Debug, Clone, Deserialize, Serialize, FromRow)]
 #[serde(crate = "rocket::serde")]
 pub struct EJob {
     pub id: Uuid,
     pub status: String,
     pub schedule: String,
-    pub since: Option<NaiveDateTime>,
-    pub until: Option<NaiveDateTime>,
+    pub since: Option<DateTime<Utc>>,
+    pub until: Option<DateTime<Utc>>,
 }
 
 impl From<EscalonJob> for EJob {
@@ -38,8 +33,10 @@ impl From<EscalonJob> for EJob {
                 EscalonJobStatus::Failed => "failed".to_string(),
             },
             schedule: escalon.schedule,
-            since: escalon.since,
-            until: escalon.until,
+            // since: escalon.since.map(|d| DateTime::from_utc(d, Utc)),
+            // until: escalon.until.map(|d| DateTime::from_utc(d, Utc)),
+            since: escalon.since.map(|d| DateTime::from_naive_utc_and_offset(d, Utc)),
+            until: escalon.until.map(|d| DateTime::from_naive_utc_and_offset(d, Utc)),
         }
     }
 }
@@ -48,24 +45,23 @@ impl From<EJob> for NewEJob {
     fn from(ejob: EJob) -> Self {
         Self {
             schedule: ejob.schedule,
-            since: ejob
-                .since
-                .map(|d| DateTime::from_naive_utc_and_offset(d, Utc)),
-            until: ejob
-                .until
-                .map(|d| DateTime::from_naive_utc_and_offset(d, Utc)),
+            since: ejob.since,
+            until: ejob.until,
         }
     }
 }
 
 impl From<EJob> for PubEJob {
     fn from(ejob: EJob) -> Self {
+        let since = ejob.since.map(|d| NaiveDateTime::from_timestamp_opt(d.timestamp(), 0));
+        let until = ejob.until.map(|d| NaiveDateTime::from_timestamp_opt(d.timestamp(), 0));
+
         PubEJob {
             id: ejob.id,
             status: ejob.status,
             schedule: ejob.schedule,
-            since: ejob.since,
-            until: ejob.until,
+            since: since.unwrap(),
+            until: until.unwrap(),
         }
     }
 }
@@ -88,29 +84,21 @@ impl From<NewEJob> for NewEscalonJob {
 }
 
 #[rocket::async_trait]
-impl EscalonJobTrait<Context<ContextDb>> for NewEJob {
-    async fn run_job(&self, context: &Context<ContextDb>, mut job: EscalonJob) -> EscalonJob {
-        use crate::database::schema::{cronjobs, escalonjobs};
-        use diesel::prelude::*;
-
-        let cron_job: CronJob = context
-            .db_pool
-            .get()
-            .await
-            .unwrap()
-            .run(move |conn| {
-                let cron_job = cronjobs::table
-                    .filter(cronjobs::job_id.eq(job.job_id))
-                    .first::<CronJob>(conn);
-
-                match cron_job {
-                    Ok(cron_job) => cron_job,
-                    Err(_) => panic!("Cron job not found"),
-                }
-            })
-            .await;
+impl EscalonJobTrait<Context> for NewEJob {
+    async fn run_job(&self, context: &Context, mut job: EscalonJob) -> EscalonJob {
+        let cron_job = match sqlx::query_as!(CronJob, "SELECT * FROM cronjobs WHERE job_id = $1", job.job_id).fetch_one(&context.db).await {
+            Ok(cron_job) => cron_job,
+            Err(e) => {
+                println!("Err: {}", e);
+                job.status = EscalonJobStatus::Failed;
+                return job;
+            }
+        };
 
         let robo_token = Claims::from(UserInClaims::default()).enconde_for_robot();
+
+        // WARNING: This is a hack, the service should be a url
+        // let service = cron_job.service;
         let service = ConfigGetter::get_entity_url(&cron_job.service).unwrap();
         let url = format!("{}{}", service, cron_job.route);
 

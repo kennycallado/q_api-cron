@@ -33,7 +33,7 @@ Accept: application/json
 
 # {{{ cron
 
-GET http://localhost:8000/api/v1/cron/
+GET http://localhost:8000/api/v1/cron
 Accept: application/json
 Authorization: Bearer 
 Content-type: application/json
@@ -44,8 +44,8 @@ Authorization: Bearer
 Content-type: application/json
 
 {
-  "service": "logic",
-  "route": "1",
+  "service": "http://httpbin.org",
+  "route": "/status/200",
   "job": {
     "schedule": "0/10 * * * * *"
   }

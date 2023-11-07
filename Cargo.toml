@@ -4,9 +4,9 @@ version   = "0.1.6"
 edition   = "2021"
 
 [features]
-default   = ["db_diesel", "cron"]
+default   = ["db_sqlx", "cron"]
 
-cron      = ["tokio-cron-scheduler", "reqwest", "escalon-jobs"]
+cron      = ["escalon-jobs", "tokio-cron-scheduler", "reqwest", "openssl/vendored"]
 db_diesel = ["diesel", "diesel_migrations", "rocket_sync_db_pools", "openssl"]
 db_sqlx   = ["sqlx", "rocket_db_pools"]
 fetch     = ["reqwest", "openssl/vendored"]
@@ -28,7 +28,7 @@ rocket = { version = "0.5.0-rc.4", features = ["json", "secrets", "uuid"] }
 rocket_db_pools = { version = "0.1.0-rc.4", features = ["sqlx_postgres"], optional = true }
 rocket_sync_db_pools = { version = "0.1.0-rc.4", features = ["diesel_postgres_pool"], optional = true }
 serde = { version = "1", features = ["derive"] }
-sqlx = { version = "0.6", default-features = false, features = ["macros", "migrate", "time", "chrono", "json"], optional = true }
+sqlx = { version = "0.7", default-features = false, features = ["macros", "migrate", "time", "chrono", "json", "uuid"], optional = true }
 tokio-cron-scheduler = { version = "*", optional = true }
 
 openssl = { version = "*", optional = true } # musl on diesel and reqwest

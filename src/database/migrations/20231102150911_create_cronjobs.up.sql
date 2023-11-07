@@ -6,4 +6,5 @@ ALTER TABLE cronjobs
   ADD COLUMN service  VARCHAR(20) NOT NULL,
   ADD COLUMN route    VARCHAR(60) NOT NULL,
   ADD COLUMN job_id   UUID NOT NULL,
-  ADD CONSTRAINT fk_appjobs_escalonjobs FOREIGN KEY (job_id) REFERENCES escalonjobs (id) ON DELETE CASCADE;
+  ADD CONSTRAINT fk_appjobs_escalonjobs FOREIGN KEY (job_id) REFERENCES escalonjobs (id) ON DELETE CASCADE
+  ;
