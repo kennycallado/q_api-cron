@@ -1,10 +1,10 @@
 [package]
 name      = "q-api-cron"
-version   = "0.1.7"
+version   = "0.1.6"
 edition   = "2021"
 
 [features]
-default   = ["db_diesel", "cron"]
+default   = ["db_sqlx", "cron"]
 
 cron      = ["escalon-jobs", "tokio-cron-scheduler", "reqwest", "openssl/vendored"]
 db_diesel = ["diesel", "diesel_migrations", "rocket_sync_db_pools", "openssl"]
