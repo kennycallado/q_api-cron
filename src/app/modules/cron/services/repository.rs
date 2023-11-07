@@ -6,8 +6,9 @@ use crate::app::modules::escalon::model::EJob;
 use crate::database::connection::Db;
 use crate::database::schema::{cronjobs, escalonjobs};
 
-pub async fn get_all(db: &Db) -> Result<Vec<CronJob>, diesel::result::Error> {
-    db.run(move |conn| cronjobs::table.load::<CronJob>(conn))
+pub async fn get_all(db: &Db) -> Result<Vec<CronJob>, sqlx::Error> {
+    sqlx::query_as!(CronJob, "SELECT * FROM cronjobs")
+        .fetch_all(&db.0)
         .await
 }
 
