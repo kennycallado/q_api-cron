@@ -32,21 +32,10 @@ impl ContextTrait<Context> for Context {
             "#,
             job.status,
             job.id,
-        ).execute(&context.db).await.unwrap();
-
-        // context
-        //     .db_pool
-        //     .get()
-        //     .await
-        //     .unwrap()
-        //     .run(move |conn| {
-        //         diesel::update(escalonjobs::table)
-        //             .filter(escalonjobs::id.eq(&job.id))
-        //             .set(&job)
-        //             .execute(conn)
-        //             .unwrap();
-        //     })
-        //     .await;
+        )
+        .execute(&context.db)
+        .await
+        .unwrap();
     }
 }
 
@@ -93,20 +82,27 @@ impl CronManager {
             WHERE cronjobs.owner = $1
             AND escalonjobs.status != 'done'
             AND escalonjobs.status != 'failed'
-            "#, ConfigGetter::get_identity())
-            .fetch_all(&self.inner().context.db).await.unwrap();
+            "#,
+            ConfigGetter::get_identity()
+        )
+        .fetch_all(&self.inner().context.db)
+        .await
+        .unwrap();
 
-        let own_jobs: Vec<(i32, EJob)> = own_jobs.into_iter().map(|job| {
-            let id = job.cron_id;
-            let job = EJob {
-                id: job.id,
-                status: job.status,
-                schedule: job.schedule,
-                since: job.since.map(|d| d.into()),
-                until: job.until.map(|d| d.into()),
-            };
-            (id, job)
-        }).collect();
+        let own_jobs: Vec<(i32, EJob)> = own_jobs
+            .into_iter()
+            .map(|job| {
+                let id = job.cron_id;
+                let job = EJob {
+                    id: job.id,
+                    status: job.status,
+                    schedule: job.schedule,
+                    since: job.since.map(|d| d.into()),
+                    until: job.until.map(|d| d.into()),
+                };
+                (id, job)
+            })
+            .collect();
 
         for job in own_jobs {
             let old_uuid = job.1.id;
@@ -123,7 +119,10 @@ impl CronManager {
                 ejob.schedule,
                 ejob.since,
                 ejob.until,
-            ).execute(&self.inner().context.db).await.unwrap();
+            )
+            .execute(&self.inner().context.db)
+            .await
+            .unwrap();
 
             sqlx::query!(
                 r#"
@@ -132,43 +131,21 @@ impl CronManager {
                 ConfigGetter::get_identity(),
                 escalon_job.job_id,
                 job.0,
-            ).execute(&self.inner().context.db).await.unwrap();
+            )
+            .execute(&self.inner().context.db)
+            .await
+            .unwrap();
 
             sqlx::query!(
                 r#"
                 DELETE FROM escalonjobs WHERE id = $1
                 "#,
                 old_uuid,
-            ).execute(&self.inner().context.db).await.unwrap();
+            )
+            .execute(&self.inner().context.db)
+            .await
+            .unwrap();
         }
-
-        // let jobs = self
-        //     .inner()
-        //     .context
-        //     .db_pool
-        //     .get()
-        //     .await
-        //     .unwrap()
-        //     .run(move |conn| {
-        //         let own_jobs: Vec<(i32, EJob)> = cronjobs::table
-        //             .inner_join(escalonjobs::table)
-        //             .filter(cronjobs::owner.eq(ConfigGetter::get_identity()))
-        //             .filter(escalonjobs::status.ne("done"))
-        //             .filter(escalonjobs::status.ne("failed"))
-        //             .select((cronjobs::id, escalonjobs::all_columns))
-        //             .load::<(i32, EJob)>(conn)
-        //             .unwrap();
-
-        //         let other_jobs: Vec<((i32, String), EJob)> = cronjobs::table
-        //             .inner_join(escalonjobs::table)
-        //             .filter(cronjobs::owner.ne(ConfigGetter::get_identity()))
-        //             .select(((cronjobs::id, cronjobs::owner), escalonjobs::all_columns))
-        //             .load::<((i32, String), EJob)>(conn)
-        //             .unwrap();
-
-        //         (own_jobs, other_jobs)
-        //     })
-        //     .await;
 
         let other_jobs = sqlx::query!(
             r#"
@@ -178,20 +155,27 @@ impl CronManager {
             WHERE cronjobs.owner != $1
             AND escalonjobs.status != 'done'
             AND escalonjobs.status != 'failed'
-            "#, ConfigGetter::get_identity())
-            .fetch_all(&self.inner().context.db).await.unwrap();
+            "#,
+            ConfigGetter::get_identity()
+        )
+        .fetch_all(&self.inner().context.db)
+        .await
+        .unwrap();
 
-        let other_jobs: Vec<(i32, EJob)> = other_jobs.into_iter().map(|job| {
-            let id = job.cron_id;
-            let job = EJob {
-                id: job.id,
-                status: job.status,
-                schedule: job.schedule,
-                since: job.since.map(|d| d.into()),
-                until: job.until.map(|d| d.into()),
-            };
-            (id, job)
-        }).collect();
+        let other_jobs: Vec<(i32, EJob)> = other_jobs
+            .into_iter()
+            .map(|job| {
+                let id = job.cron_id;
+                let job = EJob {
+                    id: job.id,
+                    status: job.status,
+                    schedule: job.schedule,
+                    since: job.since.map(|d| d.into()),
+                    until: job.until.map(|d| d.into()),
+                };
+                (id, job)
+            })
+            .collect();
 
         if !other_jobs.is_empty() {
             let jobs = other_jobs.clone();
@@ -235,7 +219,10 @@ impl CronManager {
                             ejob.schedule,
                             ejob.since,
                             ejob.until,
-                        ).execute(&manager.context.db).await.unwrap();
+                        )
+                        .execute(&manager.context.db)
+                        .await
+                        .unwrap();
 
                         sqlx::query!(
                             r#"
@@ -244,124 +231,26 @@ impl CronManager {
                             ConfigGetter::get_identity(),
                             escalon_job.job_id,
                             job.0,
-                        ).execute(&manager.context.db).await.unwrap();
+                        )
+                        .execute(&manager.context.db)
+                        .await
+                        .unwrap();
 
                         sqlx::query!(
                             r#"
                             DELETE FROM escalonjobs WHERE id = $1
                             "#,
                             old_uuid,
-                        ).execute(&manager.context.db).await.unwrap();
+                        )
+                        .execute(&manager.context.db)
+                        .await
+                        .unwrap();
                     }
                 }
 
                 return;
             });
         }
-
-        // // Own jobs
-        // for job in jobs.0 {
-        //     let old_uuid = job.1.id;
-        //     let new_ejob: NewEJob = job.1.into();
-        //     let escalon_job = self.inner().add_job(new_ejob).await;
-        //     let ejob: EJob = escalon_job.clone().into();
-
-        //     self.inner()
-        //         .context
-        //         .db_pool
-        //         .get()
-        //         .await
-        //         .unwrap()
-        //         .run(move |conn| {
-        //             diesel::insert_into(escalonjobs::table)
-        //                 .values(ejob)
-        //                 .execute(conn)
-        //                 .unwrap();
-
-        //             diesel::update(cronjobs::table)
-        //                 .filter(cronjobs::id.eq(job.0))
-        //                 .set((
-        //                     cronjobs::owner.eq(ConfigGetter::get_identity()),
-        //                     cronjobs::job_id.eq(&escalon_job.job_id),
-        //                 ))
-        //                 .execute(conn)
-        //                 .unwrap();
-
-        //             diesel::delete(escalonjobs::table)
-        //                 .filter(escalonjobs::id.eq(old_uuid))
-        //                 .execute(conn)
-        //                 .unwrap();
-        //         })
-        //         .await;
-        // }
-
-        // // Other jobs
-        // if !jobs.1.is_empty() {
-        //     let jobs = jobs.1.clone();
-        //     let manager = self.inner().clone();
-
-        //     rocket::tokio::spawn(async move {
-        //         rocket::tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-
-        //         let clients = manager.clients.clone().unwrap();
-        //         let own_start_time = manager.start_time.clone().unwrap();
-
-        //         if clients
-        //             .lock()
-        //             .unwrap()
-        //             .iter()
-        //             .find(|client| {
-        //                 let client_time = client.1.start_time;
-        //                 match client_time.duration_since(own_start_time) {
-        //                     Ok(_) => true,
-        //                     Err(_) => false,
-        //                 }
-        //             })
-        //             .is_some()
-        //         {
-        //             return;
-        //         }
-
-        //         for job in jobs {
-        //             if !clients.lock().unwrap().contains_key(&job.0 .1) {
-        //                 let old_uuid = job.1.id;
-        //                 let new_ejob: NewEJob = job.1.into();
-        //                 let escalon_job = manager.add_job(new_ejob).await;
-        //                 let ejob: EJob = escalon_job.clone().into();
-
-        //                 manager
-        //                     .context
-        //                     .db_pool
-        //                     .get()
-        //                     .await
-        //                     .unwrap()
-        //                     .run(move |conn| {
-        //                         diesel::insert_into(escalonjobs::table)
-        //                             .values(ejob)
-        //                             .execute(conn)
-        //                             .unwrap();
-
-        //                         diesel::update(cronjobs::table)
-        //                             .filter(cronjobs::id.eq(job.0 .0))
-        //                             .set((
-        //                                 cronjobs::owner.eq(ConfigGetter::get_identity()),
-        //                                 cronjobs::job_id.eq(&escalon_job.job_id),
-        //                             ))
-        //                             .execute(conn)
-        //                             .unwrap();
-
-        //                         diesel::delete(escalonjobs::table)
-        //                             .filter(escalonjobs::id.eq(old_uuid))
-        //                             .execute(conn)
-        //                             .unwrap();
-        //                     })
-        //                     .await;
-        //             }
-        //         }
-
-        //         return;
-        //     });
-        // }
     }
 }
 
@@ -388,37 +277,25 @@ impl EscalonJobsManagerTrait<Context> for Functions {
             from_client,
             n_jobs as i64,
             start_at as i64,
-        ).fetch_all(&manager.context.db).await.unwrap();
+        )
+        .fetch_all(&manager.context.db)
+        .await
+        .unwrap();
 
-        let jobs: Vec<(i32, EJob)> = jobs.into_iter().map(|job| {
-            let id = job.cron_id;
-            let job = EJob {
-                id: job.id,
-                status: job.status,
-                schedule: job.schedule,
-                since: job.since.map(|d| d.into()),
-                until: job.until.map(|d| d.into()),
-            };
-            (id, job)
-        }).collect();
-
-        // let jobs: Vec<(i32, EJob)> = manager
-        //     .context
-        //     .db_pool
-        //     .get()
-        //     .await
-        //     .unwrap()
-        //     .run(move |conn| {
-        //         cronjobs::table
-        //             .filter(cronjobs::owner.eq(&from_client))
-        //             .limit(n_jobs as i64)
-        //             .offset(start_at as i64)
-        //             .inner_join(escalonjobs::table)
-        //             .select((cronjobs::id, escalonjobs::all_columns))
-        //             .load::<(i32, EJob)>(conn)
-        //             .unwrap()
-        //     })
-        //     .await;
+        let jobs: Vec<(i32, EJob)> = jobs
+            .into_iter()
+            .map(|job| {
+                let id = job.cron_id;
+                let job = EJob {
+                    id: job.id,
+                    status: job.status,
+                    schedule: job.schedule,
+                    since: job.since.map(|d| d.into()),
+                    until: job.until.map(|d| d.into()),
+                };
+                (id, job)
+            })
+            .collect();
 
         let mut response = Vec::new();
         for job in jobs {
@@ -439,7 +316,10 @@ impl EscalonJobsManagerTrait<Context> for Functions {
                 ejob.schedule,
                 ejob.since,
                 ejob.until,
-            ).execute(&manager.context.db).await.unwrap();
+            )
+            .execute(&manager.context.db)
+            .await
+            .unwrap();
 
             sqlx::query!(
                 r#"
@@ -448,30 +328,10 @@ impl EscalonJobsManagerTrait<Context> for Functions {
                 ConfigGetter::get_identity(),
                 escalon_job.job_id,
                 id,
-            ).execute(&manager.context.db).await.unwrap();
-
-        //     manager
-        //         .context
-        //         .db_pool
-        //         .get()
-        //         .await
-        //         .unwrap()
-        //         .run(move |conn| {
-        //             diesel::insert_into(escalonjobs::table)
-        //                 .values(ejob)
-        //                 .execute(conn)
-        //                 .unwrap();
-
-        //             diesel::update(cronjobs::table)
-        //                 .filter(cronjobs::id.eq(id))
-        //                 .set((
-        //                     cronjobs::owner.eq(ConfigGetter::get_identity()),
-        //                     cronjobs::job_id.eq(&escalon_job.job_id),
-        //                 ))
-        //                 .execute(conn)
-        //                 .unwrap();
-        //         })
-        //         .await;
+            )
+            .execute(&manager.context.db)
+            .await
+            .unwrap();
 
             response.push(old_uuid.to_string());
         }
@@ -494,22 +354,10 @@ impl EscalonJobsManagerTrait<Context> for Functions {
                 DELETE FROM escalonjobs WHERE id = $1
                 "#,
                 ejob_id,
-            ).execute(&manager.context.db).await.unwrap();
-
-            // let rows = manager
-            // manager
-            //     .context
-            //     .db_pool
-            //     .get()
-            //     .await
-            //     .unwrap()
-            //     .run(move |conn| {
-            //         diesel::delete(escalonjobs::table)
-            //             .filter(escalonjobs::id.eq(&ejob_id))
-            //             .execute(conn)
-            //             .unwrap()
-            //     })
-            //     .await;
+            )
+            .execute(&manager.context.db)
+            .await
+            .unwrap();
 
             _affected_rows += rows.rows_affected() as usize;
 

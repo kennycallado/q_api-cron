@@ -1,6 +1,6 @@
 [package]
-name      = "q-api-cron"
-version   = "0.1.7"
+name      = "package-name"
+version   = "0.1.8"
 edition   = "2021"
 
 [features]
@@ -24,9 +24,9 @@ diesel_migrations = { version = "2", features = ["postgres"], optional = true }
 escalon-jobs = { version = "0.1.11", optional = true }
 jsonwebtoken = "8.2.0"
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], optional = true }
-rocket = { version = "0.5.0-rc.4", features = ["json", "secrets", "uuid"] }
-rocket_db_pools = { version = "0.1.0-rc.4", features = ["sqlx_postgres"], optional = true }
-rocket_sync_db_pools = { version = "0.1.0-rc.4", features = ["diesel_postgres_pool"], optional = true }
+rocket = { version = "0.5.0", features = ["json", "secrets", "uuid"] }
+rocket_db_pools = { version = "0.1.0", features = ["sqlx_postgres"], optional = true }
+rocket_sync_db_pools = { version = "0.1.0", features = ["diesel_postgres_pool"], optional = true }
 serde = { version = "1", features = ["derive"] }
 sqlx = { version = "0.7", default-features = false, features = ["macros", "migrate", "time", "chrono", "json", "uuid"], optional = true }
 tokio-cron-scheduler = { version = "*", optional = true }
